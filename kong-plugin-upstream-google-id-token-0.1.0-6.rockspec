@@ -1,13 +1,13 @@
 local plugin_name = "upstream-google-id-token"
 local package_name = "kong-plugin-" .. plugin_name
-local package_version = "0.1.0"
+local package_version = "0.1.0-1"
 local rockspec_revision = "6"
 
 package = package_name
 version = package_version .. "-" .. rockspec_revision
 
 source = {
-    url = "git+https://github.com/geospin-de/" .. package_name .. ".git",
+    url = "git+https://github.com/FactoryFixInc/" .. package_name .. ".git",
     tag = version
 }
 
