@@ -1,7 +1,7 @@
 local plugin_name = "upstream-google-id-token"
 local package_name = "kong-plugin-" .. plugin_name
-local package_version = "0.1.0"
-local rockspec_revision = "7"
+local package_version = "1.0.0"
+local rockspec_revision = "1"
 
 package = package_name
 version = package_version .. "-" .. rockspec_revision

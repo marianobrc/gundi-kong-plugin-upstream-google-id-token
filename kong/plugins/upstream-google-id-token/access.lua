@@ -124,7 +124,7 @@ local function add_id_token_jwt_header(conf)
         })
     end
 
-    kong.service.request.set_header("Authorization", "Bearer " .. id_token)
+    kong.service.request.set_header(conf.id_token_header_name, "Bearer " .. id_token)
 end
 
 --- Execute the script
