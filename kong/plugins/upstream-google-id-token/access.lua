@@ -6,10 +6,15 @@ local encode_base64 = ngx.encode_base64
 local http = require "resty.http"
 local _M = {}
 
-local function get_audience()
-    local svc = assert(kong.router.get_service(), "routed by a route without a service")
-    local url = svc.protocol .. "://" .. svc.host -- .. ":" .. svc.port
-    return url
+local function get_audience(conf)
+    local custom_audience = conf.custom_audience
+    if custom_audience then
+        return custom_audience
+    else  -- fallback to the service base url
+        local svc = assert(kong.router.get_service(), "routed by a route without a service")
+        local url = svc.protocol .. "://" .. svc.host -- .. ":" .. svc.port
+        return url
+    end
 end
 
 --- base 64 encoding
@@ -48,7 +53,7 @@ local function build_token_request_payload(conf)
     local payload = {
         iss = google_application_credentials['client_email'],
         aud = google_application_credentials['token_uri'],
-        target_audience = get_audience(),
+        target_audience = get_audience(conf),
         iat = current_time,
         exp = current_time + 60
     }
@@ -62,7 +67,7 @@ local function get_id_token_from_metadata_service(conf)
     local httpc = http.new()
     local res, err = httpc:request_uri(
         "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience=" ..
-            get_audience(), {
+            get_audience(conf), {
             method = "GET",
             headers = {
                 ["Metadata-Flavor"] = "Google"
@@ -72,7 +77,7 @@ local function get_id_token_from_metadata_service(conf)
         return nil, err
     else
         local id_token = res.body
-        kong.log.debug("got new id-token for ", get_audience(), " '", id_token, "'")
+        kong.log.debug("got new id-token for ", get_audience(conf), " '", id_token, "'")
         return id_token
     end
 end
@@ -98,7 +103,7 @@ local function get_id_token_via_sa_key(conf)
         return nil, err
     else
         local id_token = json.decode(res.body)['id_token']
-        kong.log.debug("got new id-token for ", get_audience(), " '", id_token, "'")
+        kong.log.debug("got new id-token for ", get_audience(conf), " '", id_token, "'")
         return id_token
     end
 end
@@ -106,7 +111,7 @@ end
 --- Add the google id token as jwt header to the request
 -- @param conf kong configuration
 local function add_id_token_jwt_header(conf)
-    local token_cache_key = get_audience()
+    local token_cache_key = get_audience(conf)
     local refresh_function = get_id_token_from_metadata_service
 
     if (google_application_credentials) then
