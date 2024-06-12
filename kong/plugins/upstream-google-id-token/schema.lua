@@ -22,6 +22,13 @@ local schema = {
                     between = {0, 3600},
                     default = 3600 -- Google ID tokens are issued for one hour validity
                 }
+            },{
+                custom_audience = {
+                    type = "string",
+                    -- This allows us to use a custom audience
+                    -- https://cloud.google.com/run/docs/configuring/custom-audiences
+                    default = nil
+                }
             }}
         }
     }}
