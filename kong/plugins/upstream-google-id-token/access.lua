@@ -6,15 +6,16 @@ local encode_base64 = ngx.encode_base64
 local http = require "resty.http"
 local _M = {}
 
+-- @param conf kong configuration
 local function get_audience(conf)
-    local custom_audience = conf.custom_audience
-    if custom_audience then
-        return custom_audience
-    else  -- fallback to the service base url
+    local audience = conf.custom_audience
+    if not audience then
+        -- fallback to the service base url
         local svc = assert(kong.router.get_service(), "routed by a route without a service")
         local url = svc.protocol .. "://" .. svc.host -- .. ":" .. svc.port
-        return url
+        audience = url
     end
+    return audience
 end
 
 --- base 64 encoding
